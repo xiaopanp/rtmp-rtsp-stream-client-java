@@ -339,24 +339,32 @@ public class Camera1ApiManager implements Camera.PreviewCallback, Camera.FaceDet
   }
 
   public void switchCamera() throws CameraOpenException {
-    if (camera != null) {
-      int oldCamera = cameraSelect;
-      int number = Camera.getNumberOfCameras();
-      for (int i = 0; i < number; i++) {
-        if (cameraSelect != i) {
-          cameraSelect = i;
-          if (!checkCanOpen()) {
-            cameraSelect = oldCamera;
-            throw new CameraOpenException("This camera resolution cant be opened");
+      if (camera != null) {
+          int oldCamera = cameraSelect;
+          int number = Camera.getNumberOfCameras();
+          List<Integer> numberQueue = new ArrayList<Integer>();
+          for (int i = oldCamera; i < number; i++) {
+              numberQueue.add(i);
           }
-          stop();
-          cameraFacing = cameraFacing == Camera.CameraInfo.CAMERA_FACING_BACK
-              ? Camera.CameraInfo.CAMERA_FACING_FRONT : Camera.CameraInfo.CAMERA_FACING_BACK;
-          start();
-          return;
-        }
+          for (int i = 0; i < oldCamera; i++) {
+              numberQueue.add(i);
+          }
+          for (int i = 0; i < number; i++) {
+              int cameraIndex =  numberQueue.get(i);
+              if (cameraSelect != cameraIndex) {
+                  cameraSelect = cameraIndex;
+                  if (!checkCanOpen()) {
+                      cameraSelect = oldCamera;
+                      throw new CameraOpenException("This camera resolution cant be opened");
+                  }
+                  stop();
+                  cameraFacing = cameraFacing == Camera.CameraInfo.CAMERA_FACING_BACK
+                          ? Camera.CameraInfo.CAMERA_FACING_FRONT : Camera.CameraInfo.CAMERA_FACING_BACK;
+                  start();
+                  return;
+              }
+          }
       }
-    }
   }
 
   private boolean checkCanOpen() {
